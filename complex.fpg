@@ -1,0 +1,141 @@
+package components
+
+import com.nirima.fireplug.core.Person
+import com.nirima.fireplug.core.ZAccounts
+import com.nirima.fireplug.core.behaviours.LivingCost
+import com.nirima.fireplug.core.behaviours.PersonalTaxation
+import org.joda.time.DateTime
+import org.joda.time.Days
+
+def monzo_balance = 3000;
+def ratesetter_balance = 5000;
+
+//=====================================================================
+// Largely fixed items - can be twiddled but mostly factual
+def net_salary_pcm = 3000;
+def net_pension_pcm = 250;
+
+//------------------------------------------------------------------------------
+// Pension pots
+//------------------------------------------------------------------------------
+def pension_balance = 150000;
+
+// =====================================================================
+// Twiddle-able knobs..
+ def investment_performance = 4.0;
+//----------------------------------------------------------------------
+// Retirement...
+// The most important numbers?
+def jb_retire_age = 65;
+
+scenario {
+
+    // Cost-of-living modelling
+
+    currentAccount = BankAccount("Current Account") {
+
+        initial_balance = monzo_balance;
+        interest_rate = 0.0;
+    }
+
+    rateSetter = BankAccount("RateSetter") {
+        initial_balance = ratesetter_balance;
+        interest_rate = 3.5;
+    }
+
+    me = Person("JoeBloggs") {
+        dob = '1975-5-8'
+        retirement_age = jb_retire_age;
+
+        Tax {
+            pay_from = currentAccount;
+        }
+    }
+
+    sipp = SIPP(me) {
+        initial_balance = pension_balance;
+        investment_growth = investment_performance;
+        pay_lump_sums_to = currentAccount;
+        tax = me;
+    }
+
+    // Employment
+    my_job = Employment(me) {
+        net_salary = net_salary_pcm;
+        pay_into = currentAccount;
+
+        Pension {
+            amount = net_pension_pcm
+            pay_into = sipp;
+        }
+    }
+
+    StatePension(me) {
+        pay_into = currentAccount;
+    }
+
+
+    //---------------------------------------
+
+    LivingCosts {
+        amount_pcm = 1000; // General spending
+        inflation_rate = 0.75;
+
+        pay_from = currentAccount
+
+        // Some known spending
+        Cost(name: "Council Tax", pcm: 330, inflation: 2.5) {
+            applyMonthly = false; // only add innflation annually
+        }
+
+        Cost(name: "Gas & Electric", pa: 2288, inflation: 2)
+
+
+        Cost(name: "Stuff", pa: 520, inflation: 2.5);
+        Cost(name: "Mobile", pa: 400, inflation: 0);
+        Cost(name: "Water", pa: 600, inflation: 0);
+        Cost(name: "Car", pa: 2000, inflation: 0);
+    }
+
+    Process {
+
+        // On the 28th of the month, sweep balances around.
+
+        if (processor.when.getDayOfMonth() == 28) {
+
+
+            BigDecimal balance = currentAccount.account.balance;
+            // Sweep Sweep
+
+            if (balance > 10000) {
+                BigDecimal amount = balance - 8000;
+                ZAccounts.transfer(processor.when, currentAccount.account, amount, rateSetter.account, "RateSetter Transfer")
+            }
+
+            // Running low on cash?
+            if (balance < 8000) {
+
+                if (rateSetter.account.currentBalance() > 2500) {
+                    ZAccounts.transfer(processor.when, rateSetter.account, 2500 as BigDecimal, currentAccount.account, "RateSetter Transfer")
+                    return;
+                }
+
+                // 1st stop, is there anything in the drawdown account?
+                if (sipp.drawdownAccount.currentBalance() > 5000) {
+                    // If so just pull from there.
+                    sipp.actions.drawdown.drawDown(processor.when, currentAccount.account, 5000 as BigDecimal);
+                    return;
+                }
+
+                // ok, not enough there. Cash some pension?
+
+                // Quit if that's not an option. Maybe we'll be OK.
+                if (!sipp.actions.isCashable(processor.when))
+                    return;
+
+                sipp.actions.cashOutAmount(processor, 15000 as BigDecimal);
+            }
+        }
+    }
+
+}

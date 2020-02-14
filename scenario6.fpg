@@ -1,0 +1,20 @@
+
+scenario {
+
+    // Simple linear payment
+
+    currentAccount = BankAccount("Current Account") {
+        name            = "Current Account"
+        initial_balance = 0;
+        interest_rate = 0.0;
+    }
+
+    FlatRateIncome("Simple Income") {
+        amount_per_month = 1000;
+        category = mapOfAccounts.RentalIncome;
+        pay_into = currentAccount;
+    }
+
+
+    
+}

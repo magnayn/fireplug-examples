@@ -1,0 +1,32 @@
+
+scenario {
+
+    // Simple linear payment, but with tax treatment
+
+    currentAccount = BankAccount("Current Account") {
+        name            = "Current Account"
+        initial_balance = 0;
+        interest_rate = 0.0;
+    }
+
+    myself = Person("NM") {
+        dob = '1975-5-8'
+
+        Tax {
+            pay_from = currentAccount;
+        }
+
+    }
+
+    // 5000 month -> 60,000 per year, so expecting to pay ~11500 in tax
+
+    FlatRateIncome("Simple Income") {
+        amount_per_month = 5000;
+        category = mapOfAccounts.RentalIncome;
+        pay_into = currentAccount;
+        tax = myself;
+    }
+
+
+    
+}

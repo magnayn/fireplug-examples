@@ -1,0 +1,25 @@
+
+
+scenario {
+
+    // State pension provision
+    // Simple case, assume no tax being paid.
+    
+
+    myself = Person("NM") {
+        dob = '1975-5-8'
+    }
+
+    currentAccount = BankAccount("Current Account") {
+        name            = "Current Account"
+        initial_balance = 0;
+        interest_rate = 0.0;
+    }
+
+    StatePension(myself) {
+        pay_into = currentAccount;
+    }
+
+
+    
+}

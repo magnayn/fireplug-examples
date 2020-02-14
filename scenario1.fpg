@@ -1,0 +1,16 @@
+
+scenario {
+
+    // Simple bank account showing 5% APR
+
+    BankAccount {
+        name            = "Current Account"
+        initial_balance = 1000;
+        interest_rate = 5.0;
+
+
+    }
+
+
+
+}

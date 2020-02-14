@@ -1,0 +1,32 @@
+
+
+import com.nirima.fireplug.core.Person
+import org.joda.time.DateTime
+
+scenario {
+
+    // No interest bank account, and 5% car loan.
+    // Employment paying into current account
+    // No attempt to pay off loan
+    // Retirement at 67, so employment payments stop then.
+
+
+    myself = new Person("NM", new DateTime(1975, 5, 8, 0, 0));
+
+    currentAccount = BankAccount("Current Account") {
+        name            = "Current Account"
+        initial_balance = 1000;
+        interest_rate = 0.0;
+    }
+
+    LoanAccount("Car Loan") {
+        initial_balance = -30000;
+        interest_rate = 5;
+    }
+
+    Employment(myself) {
+        net_salary = 1500;
+        pay_into = currentAccount;
+    }
+
+}

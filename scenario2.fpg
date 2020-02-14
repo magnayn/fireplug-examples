@@ -1,0 +1,21 @@
+
+
+scenario {
+
+    // Simple bank account showing 5% APR, and a loan
+
+    BankAccount("Current Account") {
+        name            = "Current Account"
+        initial_balance = 1000;
+        interest_rate = 5.0;
+
+
+    }
+
+    LoanAccount("Car Loan") {
+        initial_balance = -3000;
+        interest_rate = 1.5;
+    }
+    
+
+}

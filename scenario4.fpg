@@ -1,0 +1,25 @@
+
+
+scenario {
+
+    // A home loan at 6%, paid off gradually out of savings.
+
+    currentAccount = BankAccount("Current Account") {
+        name            = "Current Account"
+        initial_balance = 1000000;
+        interest_rate = 0.0;
+    }
+
+    LoanAccount("Home Loan") {
+        initial_balance = -300000;
+        interest_rate = 6;
+
+        RegularPayment {
+            per_month       = 2000
+            on_day_of_month = 1
+            fromAccount     = currentAccount
+        }
+    }
+
+    
+}

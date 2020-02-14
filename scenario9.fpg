@@ -1,0 +1,26 @@
+
+
+scenario {
+
+    // Cost-of-living modelling
+
+    currentAccount = BankAccount("Current Account") {
+        name            = "Current Account"
+        initial_balance = 10000000;
+        interest_rate = 0.0;
+    }
+
+    LivingCosts {
+        amount_pcm = 500; // General spending
+
+        pay_from = currentAccount
+
+        // Some more specific
+        Cost(name: "Gas & Electric",  pa: 3960, inflation: 2)
+        Cost(name: "Council Tax",    pcm: 330 , inflation: 2) {
+            applyMonthly = false; // only add innflation annually
+        }
+
+    }
+
+}
